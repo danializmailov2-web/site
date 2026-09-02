@@ -310,9 +310,11 @@
 
     <script>
         // =====================================================
-        // КОНФИГУРАЦИЯ (КЛЮЧ УЖЕ ВСТАВЛЕН)
+        // КОНФИГУРАЦИЯ (ИЗ ТВОЕГО СКРИНА)
         // =====================================================
         const YANDEX_API_KEY = 'AQVNx4jl17YaPED6R0FWUCyGLBZdORq_lqbOqFE8';
+        const YANDEX_FOLDER = 'b1gtq4rr0ssjqr2254p2';  // Правильный ID из скрина
+        const YANDEX_MODEL = 'speech-realtime-250923/latest';
 
         // =====================================================
         // ЭЛЕМЕНТЫ
@@ -338,7 +340,7 @@
         }
 
         // =====================================================
-        // ОСНОВНАЯ ЛОГИКА (ПРАВИЛЬНЫЙ ЗАПРОС К ЯНДЕКС GPT)
+        // ЗАПРОС К ЯНДЕКС ЧЕРЕЗ OPENAI API
         // =====================================================
         async function processCommand(cmd) {
             const c = cmd.toLowerCase().trim();
@@ -353,35 +355,37 @@
             if (navigator.onLine) {
                 try {
                     status.textContent = '🤖 Думаю...';
-                    const response = await fetch('https://llm.api.cloud.yandex.net/v1/inference', {
+
+                    // Полный URI модели, как в примере Яндекса
+                    const modelUri = `gpt://${YANDEX_FOLDER}/${YANDEX_MODEL}`;
+
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Api-Key ${YANDEX_API_KEY}`
+                            'Authorization': `Bearer ${YANDEX_API_KEY}`
                         },
                         body: JSON.stringify({
-                            modelUri: `gpt://${YANDEX_API_KEY}/yandexgpt-lite`,
-                            completionOptions: {
-                                temperature: 0.3,
-                                maxTokens: 100
-                            },
+                            model: modelUri,
                             messages: [
                                 {
                                     role: 'system',
-                                    text: 'Ты голосовой помощник. Отвечай кратко, по-русски, до 30 слов. Будь вежливым и полезным.'
+                                    content: 'Ты голосовой помощник. Отвечай кратко, по-русски, до 30 слов. Будь вежливым и полезным.'
                                 },
                                 {
                                     role: 'user',
-                                    text: cmd
+                                    content: cmd
                                 }
-                            ]
+                            ],
+                            temperature: 0.3,
+                            max_tokens: 100
                         })
                     });
 
                     const data = await response.json();
                     console.log('Ответ API:', data);
 
-                    let reply = data.result?.message?.text || data.alternatives?.[0]?.message?.text || 'Не понял вопрос';
+                    let reply = data.choices?.[0]?.message?.content || data.error?.message || 'Не понял вопрос';
                     setCached(c, reply);
                     return reply;
                 } catch (error) {
@@ -476,7 +480,7 @@
         }
 
         // =====================================================
-        // TTS (ОЗВУЧКА)
+        // TTS
         // =====================================================
         function speak(text) {
             if ('speechSynthesis' in window) {
@@ -488,7 +492,7 @@
         }
 
         // =====================================================
-        // ОФЛАЙН-СТАТУС
+        // ОФЛАЙН
         // =====================================================
         function updateOfflineStatus() {
             const isOffline = !navigator.onLine;
