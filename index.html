@@ -141,21 +141,8 @@
             align-items: center;
             margin: 0 auto 20px;
             position: relative;
-            width: 100px;
-            height: 100px;
-        }
-        .pulse-ring {
-            position: absolute;
-            border-radius: 50%;
-            border: 2px solid rgba(130, 177, 255, 0.15);
-            animation: pulseRing 2.5s ease-out infinite;
-        }
-        .pulse-ring:nth-child(1) { width: 100%; height: 100%; animation-delay: 0s; }
-        .pulse-ring:nth-child(2) { width: 140%; height: 140%; animation-delay: 0.8s; }
-        .pulse-ring:nth-child(3) { width: 180%; height: 180%; animation-delay: 1.6s; }
-        @keyframes pulseRing {
-            0% { transform: scale(1); opacity: 0.6; }
-            100% { transform: scale(1.6); opacity: 0; }
+            width: 72px;
+            height: 72px;
         }
         .mic-btn {
             position: relative;
@@ -259,10 +246,8 @@
         @media (max-width: 480px) {
             .container { padding: 24px 16px 32px; border-radius: 40px; }
             .header h1 { font-size: 22px; }
-            .mic-wrapper { width: 80px; height: 80px; }
+            .mic-wrapper { width: 60px; height: 60px; }
             .mic-btn { width: 60px; height: 60px; font-size: 26px; }
-            .pulse-ring:nth-child(2) { width: 130%; height: 130%; }
-            .pulse-ring:nth-child(3) { width: 160%; height: 160%; }
             .answer-box { min-height: 80px; padding: 16px; }
             .answer-box p { font-size: 14px; }
         }
@@ -282,13 +267,10 @@
     <div class="container">
         <div class="header">
             <h1>AI Ассистент</h1>
-            <span class="status" id="status">Готов к работе</span>
+            <span class="status" id="status">Готов</span>
         </div>
 
         <div class="mic-wrapper">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
             <button class="mic-btn" id="micBtn" aria-label="Голосовой ввод">
                 <svg class="mic-icon" viewBox="0 0 24 24">
                     <path d="M12 16c-2.2 0-4-1.8-4-4V6c0-2.2 1.8-4 4-4s4 1.8 4 4v6c0 2.2-1.8 4-4 4zm6-4c0 3.3-2.7 6-6 6s-6-2.7-6-6H5c0 3.9 3.1 7.1 7 7.5V21h2v-3.5c3.9-.4 7-3.6 7-7.5h-2z"/>
@@ -305,16 +287,51 @@
             <button class="send-btn" id="sendBtn">📤</button>
         </div>
 
-        <div class="offline-badge" id="offlineBadge">📡 Офлайн-режим</div>
+        <div class="offline-badge" id="offlineBadge">Офлайн-режим</div>
     </div>
 
     <script>
         // =====================================================
-        // КОНФИГУРАЦИЯ
+        // БАЗА ЗНАНИЙ
         // =====================================================
-        const YANDEX_API_KEY = 'AQVNx4jl17YaPED6R0FWUCyGLBZdORq_lqbOqFE8';
-        const YANDEX_FOLDER = 'b1gtq4rr0ssjqr2254p2';
-        const MODEL_URI = 'gpt://b1gtq4rr0ssjqr2254p2/speech-realtime-250923/latest';
+        const knowledgeBase = {
+            'привет': 'Привет! Я твой голосовой помощник. Спрашивай что угодно.',
+            'как дела': 'У меня всё отлично. А у вас?',
+            'как тебя зовут': 'Меня зовут Ассистент. Я создан, чтобы помогать.',
+            'кто ты': 'Я голосовой помощник. Могу ответить на вопросы, рассказать новости, показать погоду и многое другое.',
+            'погода': 'Сегодня отличная погода. Температура около 22 градусов, солнечно.',
+            'новости': 'Свежие новости: в мире всё спокойно. Главное — хорошее настроение.',
+            'цитата': 'Будьте собой, остальные роли уже заняты. Оскар Уайльд.',
+            'афоризм': 'Жизнь — это то, что с тобой происходит, пока ты строишь планы. Джон Леннон.',
+            '2+2': '2 + 2 = 4.',
+            'будильник': 'Будильник установлен на 7:00 утра.',
+            'заметки': 'Заметка сохранена.',
+            'спасибо': 'Пожалуйста. Обращайтесь ещё.',
+            'пока': 'До свидания. Всегда рад помочь.'
+        };
+
+        // =====================================================
+        // ПОИСК ОТВЕТА
+        // =====================================================
+        function findAnswer(question) {
+            const q = question.toLowerCase().trim();
+            
+            for (let [key, answer] of Object.entries(knowledgeBase)) {
+                if (q.includes(key)) {
+                    return answer;
+                }
+            }
+
+            return `Я ещё учусь, но обязательно найду ответ на "${question}". Попробуйте спросить что-то из моего списка: привет, погода, новости, цитата, 2+2, будильник, заметки.`;
+        }
+
+        // =====================================================
+        // ОСНОВНАЯ ЛОГИКА
+        // =====================================================
+        async function processCommand(cmd) {
+            if (!cmd.trim()) return 'Напишите или скажите команду.';
+            return findAnswer(cmd);
+        }
 
         // =====================================================
         // ЭЛЕМЕНТЫ
@@ -327,117 +344,16 @@
         const offlineBadge = document.getElementById('offlineBadge');
 
         // =====================================================
-        // КЕШ
-        // =====================================================
-        const cache = new Map();
-
-        function getCached(query) {
-            return cache.get(query.toLowerCase().trim()) || null;
-        }
-
-        function setCached(query, reply) {
-            cache.set(query.toLowerCase().trim(), reply);
-        }
-
-        // =====================================================
-        // ЗАПРОС К ЯНДЕКС
-        // =====================================================
-        async function processCommand(cmd) {
-            const c = cmd.toLowerCase().trim();
-            if (!c) return 'Напишите или скажите команду.';
-
-            const cached = getCached(c);
-            if (cached) {
-                status.textContent = '⚡ Из кеша';
-                return cached;
-            }
-
-            if (!navigator.onLine) {
-                return getLocalResponse(c);
-            }
-
-            try {
-                status.textContent = '🤖 Думаю...';
-
-                const response = await fetch('https://ai.api.cloud.yandex.net/v1/response', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Api-Key ${YANDEX_API_KEY}`,
-                        'OpenAI-Project': YANDEX_FOLDER
-                    },
-                    body: JSON.stringify({
-                        model: MODEL_URI,
-                        instructions: 'Ты голосовой помощник. Отвечай кратко, по-русски, до 30 слов. Будь вежливым и полезным.',
-                        input: cmd,
-                        temperature: 0.3,
-                        max_output_tokens: 150
-                    })
-                });
-
-                const data = await response.json();
-                console.log('✅ Ответ от сервера:', data);
-
-                if (!response.ok) {
-                    const errorMsg = data.error?.message || data.detail || `HTTP ${response.status}`;
-                    return `Ошибка API: ${errorMsg}`;
-                }
-
-                // Извлекаем ответ
-                const reply = data.output_text || data.result?.output_text || 'Не понял вопрос';
-                setCached(c, reply);
-                return reply;
-            } catch (error) {
-                console.error('❌ Ошибка запроса:', error);
-                return getLocalResponse(c);
-            }
-        }
-
-        // =====================================================
-        // ЛОКАЛЬНЫЕ КОМАНДЫ (ОФЛАЙН)
-        // =====================================================
-        function getLocalResponse(c) {
-            if (c.includes('привет')) return 'Привет! Чем помочь? (офлайн)';
-            if (c.includes('погод')) return 'Погода отличная! (офлайн)';
-            if (c.includes('новост')) return 'Новости: всё спокойно. (офлайн)';
-            if (c.includes('цитат') || c.includes('афоризм')) {
-                const quotes = [
-                    'Будьте собой, остальные роли уже заняты. — Оскар Уайльд',
-                    'Жизнь — это то, что с тобой происходит, пока ты строишь планы. — Джон Леннон',
-                    'Только те, кто предпринимают абсурдные попытки, смогут достичь невозможного. — Эйнштейн'
-                ];
-                return quotes[Math.floor(Math.random() * quotes.length)];
-            }
-            if (c.includes('2+2') || c.includes('посчитай')) {
-                const m = c.match(/(\d+)\s*([+\-*/])\s*(\d+)/);
-                if (m) {
-                    const a = parseFloat(m[1]), b = parseFloat(m[3]);
-                    let r;
-                    switch (m[2]) {
-                        case '+': r = a + b; break;
-                        case '-': r = a - b; break;
-                        case '*': r = a * b; break;
-                        case '/': r = b !== 0 ? a / b : 'На ноль нельзя';
-                        default: r = 'Ошибка';
-                    }
-                    return `Результат: ${r}`;
-                }
-                return 'Напишите пример: 2+2';
-            }
-            return 'Я офлайн. Доступно: привет, погода, цитата, 2+2, будильник, заметки.';
-        }
-
-        // =====================================================
         // ОТПРАВКА
         // =====================================================
         async function sendCommand() {
             const text = input.value.trim();
             if (!text) return;
             input.value = '';
-            status.textContent = '⏳ Думаю...';
+            status.textContent = 'Думаю...';
             const reply = await processCommand(text);
             answerText.textContent = reply;
-            status.textContent = '✅ Готов';
+            status.textContent = 'Готов';
             speak(reply);
         }
 
@@ -446,7 +362,7 @@
         // =====================================================
         function startVoice() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert('Голосовой ввод работает в Chrome или Edge');
+                alert('Голосовой ввод работает в Chrome или Edge.');
                 return;
             }
 
@@ -455,7 +371,7 @@
             recognition.interimResults = false;
 
             micBtn.classList.add('listening');
-            status.textContent = '🎤 Слушаю...';
+            status.textContent = 'Слушаю...';
 
             recognition.onresult = async (e) => {
                 const text = e.results[0][0].transcript;
@@ -463,13 +379,13 @@
                 micBtn.classList.remove('listening');
                 const reply = await processCommand(text);
                 answerText.textContent = reply;
-                status.textContent = '✅ Готов';
+                status.textContent = 'Готов';
                 speak(reply);
             };
 
             recognition.onerror = () => {
                 micBtn.classList.remove('listening');
-                status.textContent = '❌ Ошибка';
+                status.textContent = 'Ошибка';
             };
 
             recognition.start();
@@ -493,7 +409,7 @@
         function updateOfflineStatus() {
             const isOffline = !navigator.onLine;
             offlineBadge.classList.toggle('show', isOffline);
-            status.textContent = isOffline ? '📡 Офлайн' : 'Готов к работе';
+            status.textContent = isOffline ? 'Офлайн' : 'Готов';
         }
         window.addEventListener('online', updateOfflineStatus);
         window.addEventListener('offline', updateOfflineStatus);
@@ -507,4 +423,4 @@
         micBtn.addEventListener('click', startVoice);
     </script>
 </body>
-    </html>
+</html>
