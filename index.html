@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI Ассистент</title>
     <style>
-        /* ========================================
-           БАЗОВЫЕ СТИЛИ
-        ======================================== */
         * {
             margin: 0;
             padding: 0;
@@ -27,9 +24,6 @@
             background: #0a0618;
         }
 
-        /* ========================================
-           ФОН: ГРАДИЕНТ + ПУЗЫРИ
-        ======================================== */
         .background {
             position: fixed;
             top: 0;
@@ -49,7 +43,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* ----- ПУЗЫРИ (как на видео) ----- */
         .bubbles {
             position: absolute;
             width: 100%;
@@ -72,7 +65,6 @@
             border: 1px solid rgba(255, 255, 255, 0.03);
         }
 
-        /* Размеры и позиции пузырей */
         .bubble:nth-child(1) { width: 40px; height: 40px; left: 5%; animation-duration: 18s; animation-delay: 0s; }
         .bubble:nth-child(2) { width: 70px; height: 70px; left: 15%; animation-duration: 22s; animation-delay: 2s; }
         .bubble:nth-child(3) { width: 30px; height: 30px; left: 25%; animation-duration: 16s; animation-delay: 4s; }
@@ -90,23 +82,11 @@
         .bubble:nth-child(15) { width: 40px; height: 40px; left: 40%; animation-duration: 18s; animation-delay: 5.5s; }
 
         @keyframes bubbleFloat {
-            0% {
-                transform: translateY(0) scale(0.8) rotate(0deg);
-                opacity: 0.08;
-            }
-            50% {
-                opacity: 0.25;
-                transform: translateY(-50vh) scale(1.1) rotate(180deg);
-            }
-            100% {
-                transform: translateY(-110vh) scale(0.9) rotate(360deg);
-                opacity: 0.02;
-            }
+            0% { transform: translateY(0) scale(0.8) rotate(0deg); opacity: 0.08; }
+            50% { opacity: 0.25; transform: translateY(-50vh) scale(1.1) rotate(180deg); }
+            100% { transform: translateY(-110vh) scale(0.9) rotate(360deg); opacity: 0.02; }
         }
 
-        /* ========================================
-           ОСНОВНОЙ КОНТЕЙНЕР (ПОВЕРХ ФОНА)
-        ======================================== */
         .container {
             position: relative;
             z-index: 10;
@@ -122,9 +102,6 @@
             text-align: center;
         }
 
-        /* ========================================
-           ЗАГОЛОВОК
-        ======================================== */
         .header h1 {
             font-weight: 300;
             font-size: 26px;
@@ -152,9 +129,6 @@
             transition: 0.3s;
         }
 
-        /* ========================================
-           ОБЛАСТЬ ОТВЕТА
-        ======================================== */
         .answer-box {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(8px);
@@ -179,9 +153,6 @@
             word-break: break-word;
         }
 
-        /* ========================================
-           МИКРОФОН (КАК У АЛИСЫ)
-        ======================================== */
         .mic-wrapper {
             display: flex;
             justify-content: center;
@@ -192,7 +163,6 @@
             height: 100px;
         }
 
-        /* Кольца пульсации */
         .pulse-ring {
             position: absolute;
             border-radius: 50%;
@@ -200,28 +170,15 @@
             animation: pulseRing 2.5s ease-out infinite;
         }
 
-        .pulse-ring:nth-child(1) {
-            width: 100%;
-            height: 100%;
-            animation-delay: 0s;
-        }
-        .pulse-ring:nth-child(2) {
-            width: 140%;
-            height: 140%;
-            animation-delay: 0.8s;
-        }
-        .pulse-ring:nth-child(3) {
-            width: 180%;
-            height: 180%;
-            animation-delay: 1.6s;
-        }
+        .pulse-ring:nth-child(1) { width: 100%; height: 100%; animation-delay: 0s; }
+        .pulse-ring:nth-child(2) { width: 140%; height: 140%; animation-delay: 0.8s; }
+        .pulse-ring:nth-child(3) { width: 180%; height: 180%; animation-delay: 1.6s; }
 
         @keyframes pulseRing {
             0% { transform: scale(1); opacity: 0.6; }
             100% { transform: scale(1.6); opacity: 0; }
         }
 
-        /* Сама кнопка микрофона */
         .mic-btn {
             position: relative;
             z-index: 2;
@@ -260,16 +217,12 @@
             100% { transform: scale(1.06); box-shadow: 0 12px 60px rgba(239, 83, 80, 0.7); }
         }
 
-        /* Иконка микрофона (SVG вместо эмодзи) */
         .mic-icon {
             width: 28px;
             height: 28px;
             fill: currentColor;
         }
 
-        /* ========================================
-           СТРОКА ВВОДА
-        ======================================== */
         .input-area {
             display: flex;
             gap: 10px;
@@ -328,9 +281,6 @@
             transform: scale(0.94);
         }
 
-        /* ========================================
-           ОФЛАЙН-БЕЙДЖ
-        ======================================== */
         .offline-badge {
             display: none;
             font-size: 11px;
@@ -343,9 +293,6 @@
             display: block;
         }
 
-        /* ========================================
-           АДАПТИВ
-        ======================================== */
         @media (max-width: 480px) {
             .container { padding: 24px 16px 32px; border-radius: 40px; }
             .header h1 { font-size: 22px; }
@@ -359,40 +306,22 @@
     </style>
 </head>
 <body>
-
-    <!-- ========================================
-    ФОН: ГРАДИЕНТ + ПУЗЫРИ
-    ======================================== -->
     <div class="background">
         <div class="bubbles">
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
+            <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+            <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+            <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+            <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+            <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
         </div>
     </div>
 
-    <!-- ========================================
-    ОСНОВНОЙ КОНТЕЙНЕР
-    ======================================== -->
     <div class="container">
         <div class="header">
             <h1>AI Ассистент</h1>
             <span class="status" id="status">Готов к работе</span>
         </div>
 
-        <!-- МИКРОФОН (как у Алисы) -->
         <div class="mic-wrapper">
             <div class="pulse-ring"></div>
             <div class="pulse-ring"></div>
@@ -404,12 +333,10 @@
             </button>
         </div>
 
-        <!-- ОБЛАСТЬ ОТВЕТА -->
         <div class="answer-box">
             <p id="answerText">Напишите или скажите команду...</p>
         </div>
 
-        <!-- СТРОКА ВВОДА -->
         <div class="input-area">
             <input type="text" id="userInput" placeholder="Введите команду..." autocomplete="off">
             <button class="send-btn" id="sendBtn">📤</button>
@@ -418,10 +345,13 @@
         <div class="offline-badge" id="offlineBadge">📡 Офлайн-режим</div>
     </div>
 
-    <!-- ========================================
-    JAVASCRIPT
-    ======================================== -->
     <script>
+        // =====================================================
+        // КОНФИГУРАЦИЯ (ВСТАВЬ СВОЙ API-КЛЮЧ!)
+        // =====================================================
+        const YANDEX_API_KEY = 'AQVNx4jl17YaPED6R0FWUCyGLBZdORq_lqbOqFE8';
+        const YANDEX_MODEL = 'speech-realtime-250923';
+
         // =====================================================
         // ЭЛЕМЕНТЫ
         // =====================================================
@@ -433,19 +363,7 @@
         const offlineBadge = document.getElementById('offlineBadge');
 
         // =====================================================
-        // ОФЛАЙН-СТАТУС
-        // =====================================================
-        function updateOfflineStatus() {
-            const isOffline = !navigator.onLine;
-            offlineBadge.classList.toggle('show', isOffline);
-            status.textContent = isOffline ? 'Офлайн-режим' : 'Готов к работе';
-        }
-        window.addEventListener('online', updateOfflineStatus);
-        window.addEventListener('offline', updateOfflineStatus);
-        updateOfflineStatus();
-
-        // =====================================================
-        // КЕШ ОТВЕТОВ
+        // КЕШ
         // =====================================================
         const cache = new Map();
 
@@ -458,7 +376,7 @@
         }
 
         // =====================================================
-        // ОТВЕТЫ НА КОМАНДЫ
+        // ОСНОВНАЯ ЛОГИКА
         // =====================================================
         async function processCommand(cmd) {
             const c = cmd.toLowerCase().trim();
@@ -470,18 +388,59 @@
                 return cached;
             }
 
-            let reply = '';
+            if (navigator.onLine) {
+                try {
+                    status.textContent = '🤖 Думаю...';
+                    const response = await fetch('https://llm.api.cloud.yandex.net/v1/models/speech-realtime-250923:generate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Api-Key ${YANDEX_API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            messages: [
+                                { 
+                                    role: 'system', 
+                                    content: 'Ты голосовой помощник. Отвечай кратко, по-русски, до 30 слов. Будь вежливым и полезным.' 
+                                },
+                                { role: 'user', content: cmd }
+                            ],
+                            temperature: 0.3,
+                            maxTokens: 100
+                        })
+                    });
 
-            // --- ОФЛАЙН-КОМАНДЫ ---
-            if (c.includes('привет')) reply = 'Привет! Чем могу помочь?';
-            else if (c.includes('цитат') || c.includes('афоризм')) {
+                    const data = await response.json();
+                    console.log('Ответ API:', data);
+                    
+                    let reply = data.result?.message?.content || data.response || 'Не понял вопрос';
+                    setCached(c, reply);
+                    return reply;
+                } catch (error) {
+                    console.error('Ошибка Яндекс GPT:', error);
+                    return getLocalResponse(c);
+                }
+            } else {
+                return getLocalResponse(c);
+            }
+        }
+
+        // =====================================================
+        // ЛОКАЛЬНЫЕ КОМАНДЫ
+        // =====================================================
+        function getLocalResponse(c) {
+            if (c.includes('привет')) return 'Привет! Чем помочь? (офлайн)';
+            if (c.includes('погод')) return 'Погода отличная! (офлайн)';
+            if (c.includes('новост')) return 'Новости: всё спокойно. (офлайн)';
+            if (c.includes('цитат') || c.includes('афоризм')) {
                 const quotes = [
                     'Будьте собой, остальные роли уже заняты. — Оскар Уайльд',
                     'Жизнь — это то, что с тобой происходит, пока ты строишь планы. — Джон Леннон',
                     'Только те, кто предпринимают абсурдные попытки, смогут достичь невозможного. — Эйнштейн'
                 ];
-                reply = quotes[Math.floor(Math.random() * quotes.length)];
-            } else if (c.includes('сколько будет') || c.includes('посчитай')) {
+                return quotes[Math.floor(Math.random() * quotes.length)];
+            }
+            if (c.includes('2+2') || c.includes('посчитай')) {
                 const m = c.match(/(\d+)\s*([+\-*/])\s*(\d+)/);
                 if (m) {
                     const a = parseFloat(m[1]), b = parseFloat(m[3]);
@@ -490,65 +449,24 @@
                         case '+': r = a + b; break;
                         case '-': r = a - b; break;
                         case '*': r = a * b; break;
-                        case '/': r = b !== 0 ? a / b : 'На ноль нельзя'; break;
+                        case '/': r = b !== 0 ? a / b : 'На ноль нельзя';
                         default: r = 'Ошибка';
                     }
-                    reply = `Результат: ${r}`;
-                } else reply = 'Напишите пример: 2+2';
-            } else if (c.includes('будильник')) {
-                const t = c.match(/(\d{1,2}:\d{2})/);
-                reply = t ? `Будильник на ${t[0]}` : 'Будильник на 7:00';
-            } else if (c.includes('заметк') || c.includes('запомни')) {
-                const note = c.replace(/заметк[уа]?|запомни|сохрани\s*/, '').trim();
-                reply = note ? `Заметка "${note}" сохранена` : 'Что сохранить?';
-            }
-            // --- С ИНТЕРНЕТОМ ---
-            else if (navigator.onLine) {
-                if (c.includes('погод')) {
-                    try {
-                        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=55.75&longitude=37.61&current_weather=true');
-                        const data = await res.json();
-                        reply = `Москва: ${Math.round(data.current_weather.temperature)}°C, ${data.current_weather.weathercode === 0 ? 'ясно' : 'облачно'}`;
-                    } catch {
-                        reply = 'Погода временно недоступна';
-                    }
-                } else if (c.includes('новост')) {
-                    try {
-                        const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://ria.ru/export/rss2/archive/index.xml&api_key=4w6kavwyj6i6kqbzs4cdgj7rcgqxlhgxbwcg4n0b');
-                        const data = await res.json();
-                        if (data.items) {
-                            reply = data.items.slice(0, 2).map(i => i.title).join('. ');
-                        } else reply = 'Новостей нет';
-                    } catch {
-                        reply = 'Новости временно недоступны';
-                    }
-                } else if (c.includes('курс') || c.includes('доллар')) {
-                    try {
-                        const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-                        const data = await res.json();
-                        reply = `Доллар: ${Math.round(data.rates.RUB)} руб., евро: ${Math.round(data.rates.RUB / data.rates.EUR)} руб.`;
-                    } catch {
-                        reply = 'Курс временно недоступен';
-                    }
-                } else {
-                    reply = `Не знаю команду "${cmd}". Попробуйте: привет, погода, новости, курс, 2+2, цитата, будильник.`;
+                    return `Результат: ${r}`;
                 }
-            } else {
-                reply = 'Нужен интернет для этой команды. Доступно: привет, цитата, 2+2, будильник, заметки.';
+                return 'Напишите пример: 2+2';
             }
-
-            setCached(c, reply);
-            return reply;
+            return 'Я офлайн. Доступно: привет, погода, цитата, 2+2, будильник, заметки.';
         }
 
         // =====================================================
-        // ОТПРАВКА КОМАНДЫ
+        // ОТПРАВКА
         // =====================================================
         async function sendCommand() {
             const text = input.value.trim();
             if (!text) return;
             input.value = '';
-            status.textContent = '🔄 Думаю...';
+            status.textContent = '⏳ Думаю...';
             const reply = await processCommand(text);
             answerText.textContent = reply;
             status.textContent = '✅ Готов';
@@ -556,7 +474,7 @@
         }
 
         // =====================================================
-        // ГОЛОСОВОЙ ВВОД
+        // ГОЛОС
         // =====================================================
         function startVoice() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -564,7 +482,7 @@
                 return;
             }
 
-            const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.lang = 'ru-RU';
             recognition.interimResults = false;
 
@@ -590,7 +508,7 @@
         }
 
         // =====================================================
-        // ОЗВУЧКА (TTS)
+        // TTS
         // =====================================================
         function speak(text) {
             if ('speechSynthesis' in window) {
@@ -602,6 +520,18 @@
         }
 
         // =====================================================
+        // ОФЛАЙН
+        // =====================================================
+        function updateOfflineStatus() {
+            const isOffline = !navigator.onLine;
+            offlineBadge.classList.toggle('show', isOffline);
+            status.textContent = isOffline ? '📡 Офлайн' : 'Готов к работе';
+        }
+        window.addEventListener('online', updateOfflineStatus);
+        window.addEventListener('offline', updateOfflineStatus);
+        updateOfflineStatus();
+
+        // =====================================================
         // СОБЫТИЯ
         // =====================================================
         sendBtn.addEventListener('click', sendCommand);
@@ -609,4 +539,4 @@
         micBtn.addEventListener('click', startVoice);
     </script>
 </body>
-  </html>
+    </html>
