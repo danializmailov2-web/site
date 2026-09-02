@@ -310,7 +310,7 @@
 
     <script>
         // =====================================================
-        // КОНФИГУРАЦИЯ (ВСЁ ПРАВИЛЬНО)
+        // КОНФИГУРАЦИЯ
         // =====================================================
         const YANDEX_API_KEY = 'AQVNx4jl17YaPED6R0FWUCyGLBZdORq_lqbOqFE8';
         const YANDEX_FOLDER = 'b1gtq4rr0ssjqr2254p2';
@@ -340,7 +340,7 @@
         }
 
         // =====================================================
-        // ОТПРАВКА ЗАПРОСА
+        // ЗАПРОС К ЯНДЕКС
         // =====================================================
         async function processCommand(cmd) {
             const c = cmd.toLowerCase().trim();
@@ -367,7 +367,7 @@
                         'OpenAI-Project': YANDEX_FOLDER
                     },
                     body: JSON.stringify({
-                        model: MODEL_URI,  // <--- ПРАВИЛЬНЫЙ URI ИНСТАНСА
+                        model: MODEL_URI,
                         instructions: 'Ты голосовой помощник. Отвечай кратко, по-русски, до 30 слов. Будь вежливым и полезным.',
                         input: cmd,
                         temperature: 0.3,
@@ -376,12 +376,14 @@
                 });
 
                 const data = await response.json();
+                console.log('✅ Ответ от сервера:', data);
 
                 if (!response.ok) {
                     const errorMsg = data.error?.message || data.detail || `HTTP ${response.status}`;
-                    return `Ошибка: ${errorMsg}`;
+                    return `Ошибка API: ${errorMsg}`;
                 }
 
+                // Извлекаем ответ
                 const reply = data.output_text || data.result?.output_text || 'Не понял вопрос';
                 setCached(c, reply);
                 return reply;
@@ -426,7 +428,7 @@
         }
 
         // =====================================================
-        // ОТПРАВКА КОМАНДЫ
+        // ОТПРАВКА
         // =====================================================
         async function sendCommand() {
             const text = input.value.trim();
@@ -440,7 +442,7 @@
         }
 
         // =====================================================
-        // ГОЛОСОВОЙ ВВОД
+        // ГОЛОС
         // =====================================================
         function startVoice() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -474,7 +476,7 @@
         }
 
         // =====================================================
-        // ОЗВУЧКА (TTS)
+        // TTS
         // =====================================================
         function speak(text) {
             if ('speechSynthesis' in window) {
@@ -486,7 +488,7 @@
         }
 
         // =====================================================
-        // СТАТУС ОФЛАЙН
+        // ОФЛАЙН
         // =====================================================
         function updateOfflineStatus() {
             const isOffline = !navigator.onLine;
