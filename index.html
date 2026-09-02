@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Ассистент</title>
+    <style>
+        /* ========================================
+           БАЗОВЫЕ СТИЛИ
+        ======================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #fff;
+            padding: 16px;
+            margin: 0;
+            overflow: hidden;
+            background: #0a0618;
+        }
+
+        /* ========================================
+           ФОН: ГРАДИЕНТ + ПУЗЫРИ
+        ======================================== */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: linear-gradient(145deg, #1A0533, #0D1B3E, #1A0533);
+            background-size: 300% 300%;
+            animation: gradientShift 12s ease-in-out infinite alternate;
+            overflow: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ----- ПУЗЫРИ (как на видео) ----- */
+        .bubbles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -80px;
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: bubbleFloat linear infinite;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        /* Размеры и позиции пузырей */
+        .bubble:nth-child(1) { width: 40px; height: 40px; left: 5%; animation-duration: 18s; animation-delay: 0s; }
+        .bubble:nth-child(2) { width: 70px; height: 70px; left: 15%; animation-duration: 22s; animation-delay: 2s; }
+        .bubble:nth-child(3) { width: 30px; height: 30px; left: 25%; animation-duration: 16s; animation-delay: 4s; }
+        .bubble:nth-child(4) { width: 90px; height: 90px; left: 35%; animation-duration: 25s; animation-delay: 1s; }
+        .bubble:nth-child(5) { width: 50px; height: 50px; left: 45%; animation-duration: 19s; animation-delay: 3s; }
+        .bubble:nth-child(6) { width: 65px; height: 65px; left: 55%; animation-duration: 21s; animation-delay: 5s; }
+        .bubble:nth-child(7) { width: 35px; height: 35px; left: 65%; animation-duration: 17s; animation-delay: 0.5s; }
+        .bubble:nth-child(8) { width: 80px; height: 80px; left: 75%; animation-duration: 24s; animation-delay: 2.5s; }
+        .bubble:nth-child(9) { width: 45px; height: 45px; left: 85%; animation-duration: 20s; animation-delay: 4.5s; }
+        .bubble:nth-child(10) { width: 55px; height: 55px; left: 92%; animation-duration: 23s; animation-delay: 1.5s; }
+        .bubble:nth-child(11) { width: 25px; height: 25px; left: 10%; animation-duration: 15s; animation-delay: 6s; }
+        .bubble:nth-child(12) { width: 100px; height: 100px; left: 50%; animation-duration: 28s; animation-delay: 3.5s; }
+        .bubble:nth-child(13) { width: 60px; height: 60px; left: 70%; animation-duration: 20s; animation-delay: 7s; }
+        .bubble:nth-child(14) { width: 75px; height: 75px; left: 20%; animation-duration: 26s; animation-delay: 0.8s; }
+        .bubble:nth-child(15) { width: 40px; height: 40px; left: 40%; animation-duration: 18s; animation-delay: 5.5s; }
+
+        @keyframes bubbleFloat {
+            0% {
+                transform: translateY(0) scale(0.8) rotate(0deg);
+                opacity: 0.08;
+            }
+            50% {
+                opacity: 0.25;
+                transform: translateY(-50vh) scale(1.1) rotate(180deg);
+            }
+            100% {
+                transform: translateY(-110vh) scale(0.9) rotate(360deg);
+                opacity: 0.02;
+            }
+        }
+
+        /* ========================================
+           ОСНОВНОЙ КОНТЕЙНЕР (ПОВЕРХ ФОНА)
+        ======================================== */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 420px;
+            width: 100%;
+            padding: 32px 24px 40px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 56px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            text-align: center;
+        }
+
+        /* ========================================
+           ЗАГОЛОВОК
+        ======================================== */
+        .header h1 {
+            font-weight: 300;
+            font-size: 26px;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #b388ff, #82b1ff, #b388ff);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+
+        .status {
+            display: block;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 4px;
+            font-weight: 300;
+            letter-spacing: 0.3px;
+            transition: 0.3s;
+        }
+
+        /* ========================================
+           ОБЛАСТЬ ОТВЕТА
+        ======================================== */
+        .answer-box {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 32px;
+            padding: 24px 20px;
+            min-height: 120px;
+            margin: 20px 0 28px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .answer-box p {
+            font-size: 16px;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 300;
+            width: 100%;
+            word-break: break-word;
+        }
+
+        /* ========================================
+           МИКРОФОН (КАК У АЛИСЫ)
+        ======================================== */
+        .mic-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px;
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+
+        /* Кольца пульсации */
+        .pulse-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(130, 177, 255, 0.15);
+            animation: pulseRing 2.5s ease-out infinite;
+        }
+
+        .pulse-ring:nth-child(1) {
+            width: 100%;
+            height: 100%;
+            animation-delay: 0s;
+        }
+        .pulse-ring:nth-child(2) {
+            width: 140%;
+            height: 140%;
+            animation-delay: 0.8s;
+        }
+        .pulse-ring:nth-child(3) {
+            width: 180%;
+            height: 180%;
+            animation-delay: 1.6s;
+        }
+
+        @keyframes pulseRing {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        /* Сама кнопка микрофона */
+        .mic-btn {
+            position: relative;
+            z-index: 2;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #5c6bc0, #283593);
+            border: none;
+            color: #fff;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(40, 53, 147, 0.4);
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mic-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 12px 40px rgba(40, 53, 147, 0.5);
+        }
+
+        .mic-btn:active {
+            transform: scale(0.92);
+        }
+
+        .mic-btn.listening {
+            background: radial-gradient(circle at 30% 30%, #ef5350, #b71c1c);
+            box-shadow: 0 8px 40px rgba(239, 83, 80, 0.5);
+            animation: micPulse 0.8s ease-in-out infinite alternate;
+        }
+
+        @keyframes micPulse {
+            0% { transform: scale(1); box-shadow: 0 8px 40px rgba(239, 83, 80, 0.4); }
+            100% { transform: scale(1.06); box-shadow: 0 12px 60px rgba(239, 83, 80, 0.7); }
+        }
+
+        /* Иконка микрофона (SVG вместо эмодзи) */
+        .mic-icon {
+            width: 28px;
+            height: 28px;
+            fill: currentColor;
+        }
+
+        /* ========================================
+           СТРОКА ВВОДА
+        ======================================== */
+        .input-area {
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 60px;
+            padding: 4px 4px 4px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: 0.3s;
+            margin-top: 8px;
+        }
+
+        .input-area:focus-within {
+            border-color: rgba(130, 177, 255, 0.2);
+            box-shadow: 0 0 0 4px rgba(130, 177, 255, 0.04);
+        }
+
+        .input-area input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 4px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            font-weight: 300;
+            min-width: 0;
+        }
+
+        .input-area input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+            font-weight: 300;
+        }
+
+        .input-area .send-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            border-radius: 60px;
+            padding: 10px 18px;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.2s;
+            min-width: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-area .send-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .input-area .send-btn:active {
+            transform: scale(0.94);
+        }
+
+        /* ========================================
+           ОФЛАЙН-БЕЙДЖ
+        ======================================== */
+        .offline-badge {
+            display: none;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.2);
+            margin-top: 16px;
+            letter-spacing: 0.3px;
+        }
+
+        .offline-badge.show {
+            display: block;
+        }
+
+        /* ========================================
+           АДАПТИВ
+        ======================================== */
+        @media (max-width: 480px) {
+            .container { padding: 24px 16px 32px; border-radius: 40px; }
+            .header h1 { font-size: 22px; }
+            .mic-wrapper { width: 80px; height: 80px; }
+            .mic-btn { width: 60px; height: 60px; font-size: 26px; }
+            .pulse-ring:nth-child(2) { width: 130%; height: 130%; }
+            .pulse-ring:nth-child(3) { width: 160%; height: 160%; }
+            .answer-box { min-height: 80px; padding: 16px; }
+            .answer-box p { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================
+    ФОН: ГРАДИЕНТ + ПУЗЫРИ
+    ======================================== -->
+    <div class="background">
+        <div class="bubbles">
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+        </div>
+    </div>
+
+    <!-- ========================================
+    ОСНОВНОЙ КОНТЕЙНЕР
+    ======================================== -->
+    <div class="container">
+        <div class="header">
+            <h1>AI Ассистент</h1>
+            <span class="status" id="status">Готов к работе</span>
+        </div>
+
+        <!-- МИКРОФОН (как у Алисы) -->
+        <div class="mic-wrapper">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+            <button class="mic-btn" id="micBtn" aria-label="Голосовой ввод">
+                <svg class="mic-icon" viewBox="0 0 24 24">
+                    <path d="M12 16c-2.2 0-4-1.8-4-4V6c0-2.2 1.8-4 4-4s4 1.8 4 4v6c0 2.2-1.8 4-4 4zm6-4c0 3.3-2.7 6-6 6s-6-2.7-6-6H5c0 3.9 3.1 7.1 7 7.5V21h2v-3.5c3.9-.4 7-3.6 7-7.5h-2z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- ОБЛАСТЬ ОТВЕТА -->
+        <div class="answer-box">
+            <p id="answerText">Напишите или скажите команду...</p>
+        </div>
+
+        <!-- СТРОКА ВВОДА -->
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Введите команду..." autocomplete="off">
+            <button class="send-btn" id="sendBtn">📤</button>
+        </div>
+
+        <div class="offline-badge" id="offlineBadge">📡 Офлайн-режим</div>
+    </div>
+
+    <!-- ========================================
+    JAVASCRIPT
+    ======================================== -->
+    <script>
+        // =====================================================
+        // ЭЛЕМЕНТЫ
+        // =====================================================
+        const input = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const micBtn = document.getElementById('micBtn');
+        const answerText = document.getElementById('answerText');
+        const status = document.getElementById('status');
+        const offlineBadge = document.getElementById('offlineBadge');
+
+        // =====================================================
+        // ОФЛАЙН-СТАТУС
+        // =====================================================
+        function updateOfflineStatus() {
+            const isOffline = !navigator.onLine;
+            offlineBadge.classList.toggle('show', isOffline);
+            status.textContent = isOffline ? 'Офлайн-режим' : 'Готов к работе';
+        }
+        window.addEventListener('online', updateOfflineStatus);
+        window.addEventListener('offline', updateOfflineStatus);
+        updateOfflineStatus();
+
+        // =====================================================
+        // КЕШ ОТВЕТОВ
+        // =====================================================
+        const cache = new Map();
+
+        function getCached(query) {
+            return cache.get(query.toLowerCase().trim()) || null;
+        }
+
+        function setCached(query, reply) {
+            cache.set(query.toLowerCase().trim(), reply);
+        }
+
+        // =====================================================
+        // ОТВЕТЫ НА КОМАНДЫ
+        // =====================================================
+        async function processCommand(cmd) {
+            const c = cmd.toLowerCase().trim();
+            if (!c) return 'Напишите или скажите команду.';
+
+            const cached = getCached(c);
+            if (cached) {
+                status.textContent = '⚡ Из кеша';
+                return cached;
+            }
+
+            let reply = '';
+
+            // --- ОФЛАЙН-КОМАНДЫ ---
+            if (c.includes('привет')) reply = 'Привет! Чем могу помочь?';
+            else if (c.includes('цитат') || c.includes('афоризм')) {
+                const quotes = [
+                    'Будьте собой, остальные роли уже заняты. — Оскар Уайльд',
+                    'Жизнь — это то, что с тобой происходит, пока ты строишь планы. — Джон Леннон',
+                    'Только те, кто предпринимают абсурдные попытки, смогут достичь невозможного. — Эйнштейн'
+                ];
+                reply = quotes[Math.floor(Math.random() * quotes.length)];
+            } else if (c.includes('сколько будет') || c.includes('посчитай')) {
+                const m = c.match(/(\d+)\s*([+\-*/])\s*(\d+)/);
+                if (m) {
+                    const a = parseFloat(m[1]), b = parseFloat(m[3]);
+                    let r;
+                    switch (m[2]) {
+                        case '+': r = a + b; break;
+                        case '-': r = a - b; break;
+                        case '*': r = a * b; break;
+                        case '/': r = b !== 0 ? a / b : 'На ноль нельзя'; break;
+                        default: r = 'Ошибка';
+                    }
+                    reply = `Результат: ${r}`;
+                } else reply = 'Напишите пример: 2+2';
+            } else if (c.includes('будильник')) {
+                const t = c.match(/(\d{1,2}:\d{2})/);
+                reply = t ? `Будильник на ${t[0]}` : 'Будильник на 7:00';
+            } else if (c.includes('заметк') || c.includes('запомни')) {
+                const note = c.replace(/заметк[уа]?|запомни|сохрани\s*/, '').trim();
+                reply = note ? `Заметка "${note}" сохранена` : 'Что сохранить?';
+            }
+            // --- С ИНТЕРНЕТОМ ---
+            else if (navigator.onLine) {
+                if (c.includes('погод')) {
+                    try {
+                        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=55.75&longitude=37.61&current_weather=true');
+                        const data = await res.json();
+                        reply = `Москва: ${Math.round(data.current_weather.temperature)}°C, ${data.current_weather.weathercode === 0 ? 'ясно' : 'облачно'}`;
+                    } catch {
+                        reply = 'Погода временно недоступна';
+                    }
+                } else if (c.includes('новост')) {
+                    try {
+                        const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://ria.ru/export/rss2/archive/index.xml&api_key=4w6kavwyj6i6kqbzs4cdgj7rcgqxlhgxbwcg4n0b');
+                        const data = await res.json();
+                        if (data.items) {
+                            reply = data.items.slice(0, 2).map(i => i.title).join('. ');
+                        } else reply = 'Новостей нет';
+                    } catch {
+                        reply = 'Новости временно недоступны';
+                    }
+                } else if (c.includes('курс') || c.includes('доллар')) {
+                    try {
+                        const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                        const data = await res.json();
+                        reply = `Доллар: ${Math.round(data.rates.RUB)} руб., евро: ${Math.round(data.rates.RUB / data.rates.EUR)} руб.`;
+                    } catch {
+                        reply = 'Курс временно недоступен';
+                    }
+                } else {
+                    reply = `Не знаю команду "${cmd}". Попробуйте: привет, погода, новости, курс, 2+2, цитата, будильник.`;
+                }
+            } else {
+                reply = 'Нужен интернет для этой команды. Доступно: привет, цитата, 2+2, будильник, заметки.';
+            }
+
+            setCached(c, reply);
+            return reply;
+        }
+
+        // =====================================================
+        // ОТПРАВКА КОМАНДЫ
+        // =====================================================
+        async function sendCommand() {
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            status.textContent = '🔄 Думаю...';
+            const reply = await processCommand(text);
+            answerText.textContent = reply;
+            status.textContent = '✅ Готов';
+            speak(reply);
+        }
+
+        // =====================================================
+        // ГОЛОСОВОЙ ВВОД
+        // =====================================================
+        function startVoice() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('Голосовой ввод работает в Chrome или Edge');
+                return;
+            }
+
+            const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'ru-RU';
+            recognition.interimResults = false;
+
+            micBtn.classList.add('listening');
+            status.textContent = '🎤 Слушаю...';
+
+            recognition.onresult = async (e) => {
+                const text = e.results[0][0].transcript;
+                input.value = text;
+                micBtn.classList.remove('listening');
+                const reply = await processCommand(text);
+                answerText.textContent = reply;
+                status.textContent = '✅ Готов';
+                speak(reply);
+            };
+
+            recognition.onerror = () => {
+                micBtn.classList.remove('listening');
+                status.textContent = '❌ Ошибка';
+            };
+
+            recognition.start();
+        }
+
+        // =====================================================
+        // ОЗВУЧКА (TTS)
+        // =====================================================
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ru-RU';
+                utterance.rate = 0.9;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // =====================================================
+        // СОБЫТИЯ
+        // =====================================================
+        sendBtn.addEventListener('click', sendCommand);
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendCommand(); });
+        micBtn.addEventListener('click', startVoice);
+    </script>
+</body>
+  </html>
